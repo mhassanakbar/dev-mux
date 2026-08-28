@@ -5,6 +5,11 @@
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
     "jsx": "react-jsx",
     "noImplicitAny": true,
     "sourceMap": true,
