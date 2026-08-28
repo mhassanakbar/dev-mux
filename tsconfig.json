@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "paths": {
       "@/*": [
-        "./*"
+        "./src/renderer/*"
       ]
     },
     "jsx": "react-jsx",
