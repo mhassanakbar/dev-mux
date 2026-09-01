@@ -1,12 +1,23 @@
-import React from 'react';
-import { Button } from './components/ui/button';
+import { RouterProvider } from "react-router/dom";
+import { createHashRouter } from "react-router";
+import { AppLayout } from "./AppLayout";
 
-export default function App() {
-    return (
-        <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-            <h1>Welcome to Dev Mux</h1>
-            <p>Electron + Vite + React + TypeScript is officially up and running!</p>
-            <Button > Hello World!</Button>
-        </div>
-    );
+const router = createHashRouter([
+    {
+        path: "/",
+        element: <AppLayout />,
+        children: [
+            {
+                index: true,
+                element: <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+                    <h1>Welcome to Dev Mux</h1>
+                    <p>Electron + Vite + React + TypeScript is officially up and running!</p>
+                </div>,
+            }
+        ],
+    },
+]);
+
+export function App() {
+    return <RouterProvider router={router} />;
 }
