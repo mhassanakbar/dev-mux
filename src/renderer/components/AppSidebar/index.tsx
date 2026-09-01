@@ -13,6 +13,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "../ui/sidebar";
+import { useAppSidebarState } from "./state";
 
 type Service = {
     id: number;
@@ -20,32 +21,17 @@ type Service = {
     running: boolean;
 };
 
-const initialServices: Service[] = [
-    { id: 1, name: "Web", running: true },
-    { id: 2, name: "API", running: true },
-    { id: 3, name: "Worker", running: false },
-];
-
 export function AppSidebar() {
-    const [services, setServices] = useState(initialServices);
-    const [selectedServiceId, setSelectedServiceId] = useState(2);
+    const services = useAppSidebarState((state) => state.services);
+    const selectedServiceId = useAppSidebarState((state) => state.selectedServiceId);
+    const setSelectedServiceId = useAppSidebarState(state => state.setSelectedServiceId)
+    const addService = useAppSidebarState(state => state.addService)
     const [isAddingService, setIsAddingService] = useState(false);
     const [serviceName, setServiceName] = useState("");
 
-    function addService(event: FormEvent<HTMLFormElement>) {
+    function addServiceHandler(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-
-        const name = serviceName.trim();
-        if (!name) return;
-
-        const service: Service = {
-            id: Math.max(0, ...services.map(({ id }) => id)) + 1,
-            name,
-            running: false,
-        };
-
-        setServices((currentServices) => [...currentServices, service]);
-        setSelectedServiceId(service.id);
+        addService(serviceName);
         setServiceName("");
         setIsAddingService(false);
     }
@@ -90,7 +76,7 @@ export function AppSidebar() {
 
                 <SidebarGroup className="pt-0">
                     {isAddingService ? (
-                        <form className="space-y-2" onSubmit={addService}>
+                        <form className="space-y-2" onSubmit={addServiceHandler}>
                             <SidebarInput
                                 autoFocus
                                 aria-label="Service name"
