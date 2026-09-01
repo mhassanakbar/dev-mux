@@ -1,5 +1,7 @@
 import { removeFirstByProp } from "@/utils/arrayHelpers";
+import { electronJsonStorage } from "@/lib/electronJsonStorage";
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 type Service = {
     id: string;
@@ -18,7 +20,9 @@ type AppSidebarActions = {
     setSelectedServiceId: (id: string) => void
 }
 
-export const useAppSidebarState = create<AppSidebarState & AppSidebarActions>((set) => ({
+type AppSidebarStore = AppSidebarState & AppSidebarActions;
+
+export const useAppSidebarState = create<AppSidebarStore>()(persist((set) => ({
     services: [],
     selectedServiceId: null,
     addService: (name) => {
@@ -43,4 +47,11 @@ export const useAppSidebarState = create<AppSidebarState & AppSidebarActions>((s
     setSelectedServiceId: (id) => {
         set(() => ({ selectedServiceId: id }))
     }
+}), {
+    name: "app-sidebar",
+    storage: createJSONStorage(() => electronJsonStorage),
+    partialize: (state) => ({
+        services: state.services,
+        selectedServiceId: state.selectedServiceId,
+    }),
 }))
