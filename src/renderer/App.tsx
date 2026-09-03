@@ -5,6 +5,7 @@ import { Configuration } from "./components/Configuration";
 import { Logs } from "./components/Logs";
 import { Metrics } from "./components/Metrics";
 import { Settings } from "./components/Settings";
+import { ThemeProvider } from "./components/ThemeProvider";
 import { Workspace } from "./components/Workspace";
 import { WorkspaceList } from "./components/WorkspaceList";
 
@@ -48,5 +49,9 @@ const router = createHashRouter([
 ]);
 
 export function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
+  );
 }
