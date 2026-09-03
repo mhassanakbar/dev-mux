@@ -75,6 +75,16 @@ pnpm package    # create an unpacked application
 pnpm make       # create distributable artifacts
 ```
 
+Run the local quality checks:
+
+```bash
+pnpm lint
+pnpm test
+```
+
+Husky runs both checks before each push. The hook is installed automatically by
+`pnpm install` through the package `prepare` script.
+
 ## Repository structure
 
 ```text
