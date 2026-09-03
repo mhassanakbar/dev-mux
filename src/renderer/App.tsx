@@ -1,23 +1,52 @@
 import { RouterProvider } from "react-router/dom";
-import { createHashRouter } from "react-router";
+import { Navigate, createHashRouter } from "react-router";
 import { AppLayout } from "./AppLayout";
+import { Configuration } from "./components/Configuration";
+import { Logs } from "./components/Logs";
+import { Metrics } from "./components/Metrics";
+import { Settings } from "./components/Settings";
+import { Workspace } from "./components/Workspace";
+import { WorkspaceList } from "./components/WorkspaceList";
 
 const router = createHashRouter([
-    {
-        path: "/",
-        element: <AppLayout />,
+  {
+    path: "/",
+    element: <AppLayout />,
+    children: [
+      {
+        index: true,
+        element: <WorkspaceList />,
+      },
+      {
+        path: "workspaces/:workspaceId",
+        element: <Workspace />,
         children: [
-            {
-                index: true,
-                element: <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-                    <h1>Welcome to Dev Mux</h1>
-                    <p>Electron + Vite + React + TypeScript is officially up and running!</p>
-                </div>,
-            }
+          {
+            index: true,
+            element: <Navigate to="logs" replace />,
+          },
+          {
+            path: "logs",
+            element: <Logs />,
+          },
+          {
+            path: "metrics",
+            element: <Metrics />,
+          },
+          {
+            path: "configuration",
+            element: <Configuration />,
+          },
         ],
-    },
+      },
+      {
+        path: "settings",
+        element: <Settings />,
+      },
+    ],
+  },
 ]);
 
 export function App() {
-    return <RouterProvider router={router} />;
+  return <RouterProvider router={router} />;
 }

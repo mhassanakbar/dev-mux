@@ -1,57 +1,120 @@
-import { removeFirstByProp } from "@/utils/arrayHelpers";
 import { electronJsonStorage } from "@/lib/electronJsonStorage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-type Service = {
-    id: string;
-    name: string;
-    running: boolean;
+export type Service = {
+  id: string;
+  name: string;
+  running: boolean;
 };
 
-type AppSidebarState = {
-    services: Service[]
-    selectedServiceId: string | null;
-}
+export type Workspace = {
+  id: string;
+  name: string;
+  rootDirectory: string;
+  services: Service[];
+  selectedServiceId: string | null;
+};
 
-type AppSidebarActions = {
-    addService: (name: string) => void
-    removeService: (id: string) => void
-    setSelectedServiceId: (id: string) => void
-}
+type WorkspaceState = {
+  workspaces: Workspace[];
+  selectedWorkspaceId: string | null;
+};
 
-type AppSidebarStore = AppSidebarState & AppSidebarActions;
+type WorkspaceActions = {
+  addWorkspace: (name: string, rootDirectory: string) => string;
+  removeWorkspace: (id: string) => void;
+  setSelectedWorkspaceId: (id: string | null) => void;
+  addService: (workspaceId: string, name: string) => void;
+  removeService: (workspaceId: string, serviceId: string) => void;
+  setSelectedServiceId: (workspaceId: string, serviceId: string | null) => void;
+};
 
-export const useAppSidebarState = create<AppSidebarStore>()(persist((set) => ({
-    services: [],
-    selectedServiceId: null,
-    addService: (name) => {
+type WorkspaceStore = WorkspaceState & WorkspaceActions;
+
+export const useAppSidebarState = create<WorkspaceStore>()(
+  persist(
+    (set) => ({
+      workspaces: [],
+      selectedWorkspaceId: null,
+      addWorkspace: (name, rootDirectory) => {
         const id = crypto.randomUUID();
         set((state) => ({
-            services: [...state.services, {
-                id,
-                name,
-                running: false
-            }],
-            selectedServiceId: id
-        }))
-    },
-    removeService: (id) => {
-        set((state) => {
-            const updatedServices = removeFirstByProp(state.services, "id", id);
+          workspaces: [
+            ...state.workspaces,
+            {
+              id,
+              name: name.trim(),
+              rootDirectory: rootDirectory.trim(),
+              services: [],
+              selectedServiceId: null,
+            },
+          ],
+          selectedWorkspaceId: id,
+        }));
+        return id;
+      },
+      removeWorkspace: (id) => {
+        set((state) => ({
+          workspaces: state.workspaces.filter((workspace) => workspace.id !== id),
+          selectedWorkspaceId:
+            state.selectedWorkspaceId === id ? null : state.selectedWorkspaceId,
+        }));
+      },
+      setSelectedWorkspaceId: (id) => set({ selectedWorkspaceId: id }),
+      addService: (workspaceId, name) => {
+        const service: Service = {
+          id: crypto.randomUUID(),
+          name: name.trim(),
+          running: false,
+        };
+        set((state) => ({
+          workspaces: state.workspaces.map((workspace) =>
+            workspace.id === workspaceId
+              ? {
+                  ...workspace,
+                  services: [...workspace.services, service],
+                  selectedServiceId: service.id,
+                }
+              : workspace,
+          ),
+        }));
+      },
+      removeService: (workspaceId, serviceId) => {
+        set((state) => ({
+          workspaces: state.workspaces.map((workspace) => {
+            if (workspace.id !== workspaceId) return workspace;
+
+            const services = workspace.services.filter((service) => service.id !== serviceId);
             return {
-                services: updatedServices
-            }
-        })
-    },
-    setSelectedServiceId: (id) => {
-        set(() => ({ selectedServiceId: id }))
-    }
-}), {
-    name: "app-sidebar",
-    storage: createJSONStorage(() => electronJsonStorage),
-    partialize: (state) => ({
-        services: state.services,
-        selectedServiceId: state.selectedServiceId,
+              ...workspace,
+              services,
+              selectedServiceId:
+                workspace.selectedServiceId === serviceId
+                  ? (services[0]?.id ?? null)
+                  : workspace.selectedServiceId,
+            };
+          }),
+        }));
+      },
+      setSelectedServiceId: (workspaceId, serviceId) => {
+        set((state) => ({
+          workspaces: state.workspaces.map((workspace) =>
+            workspace.id === workspaceId
+              ? { ...workspace, selectedServiceId: serviceId }
+              : workspace,
+          ),
+        }));
+      },
     }),
-}))
+    {
+      name: "app-sidebar",
+      version: 1,
+      storage: createJSONStorage(() => electronJsonStorage),
+      partialize: (state) => ({
+        workspaces: state.workspaces,
+        selectedWorkspaceId: state.selectedWorkspaceId,
+      }),
+    },
+  ),
+);
