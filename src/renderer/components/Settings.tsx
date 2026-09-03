@@ -1,10 +1,20 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Monitor, Moon, Sun, type LucideIcon } from "lucide-react";
 import { Link } from "react-router";
 
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "./ui/button";
+import { useSettingsState, type Theme } from "./Settings/state";
+import { Button, buttonVariants } from "./ui/button";
+
+const themeOptions: { icon: LucideIcon; label: string; value: Theme }[] = [
+  { icon: Sun, label: "Light", value: "light" },
+  { icon: Moon, label: "Dark", value: "dark" },
+  { icon: Monitor, label: "System", value: "system" },
+];
 
 export function Settings() {
+  const theme = useSettingsState((state) => state.theme);
+  const setTheme = useSettingsState((state) => state.setTheme);
+
   return (
     <div className="min-h-full bg-muted/20">
       <header className="flex h-14 items-center gap-3 border-b bg-background px-6">
@@ -25,17 +35,29 @@ export function Settings() {
         <section>
           <h2 className="mb-2 px-1 text-xs font-medium text-muted-foreground">Appearance</h2>
           <div className="divide-y rounded-lg border bg-background shadow-xs">
-            <label className="flex items-center justify-between gap-4 p-4 text-sm">
+            <div className="flex items-center justify-between gap-4 p-4 text-sm">
               <span>
                 <span className="block font-medium">Theme</span>
                 <span className="mt-1 block text-xs text-muted-foreground">Choose how DevMux looks on this device.</span>
               </span>
-              <select className="h-9 rounded-md border bg-background px-2 text-xs" defaultValue="system">
-                <option value="system">System</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
-            </label>
+              <div aria-label="Theme" className="flex rounded-lg border bg-muted/50 p-1" role="group">
+                {themeOptions.map(({ icon: Icon, label, value }) => (
+                  <Button
+                    aria-label={`Use ${label.toLowerCase()} theme`}
+                    aria-pressed={theme === value}
+                    className="gap-1.5 px-2.5"
+                    key={value}
+                    onClick={() => setTheme(value)}
+                    size="sm"
+                    type="button"
+                    variant={theme === value ? "secondary" : "ghost"}
+                  >
+                    <Icon />
+                    <span>{label}</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
             <label className="flex items-center justify-between gap-4 p-4 text-sm">
               <span>
                 <span className="block font-medium">Compact logs</span>
